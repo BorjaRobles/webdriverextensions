@@ -8,7 +8,9 @@ import java.util.concurrent.TimeUnit;
 import com.github.webdriverextensions.internal.BotUtils;
 import static com.github.webdriverextensions.internal.BotUtils.asNanos;
 import com.github.webdriverextensions.internal.Openable;
+import com.github.webdriverextensions.internal.ReflectionUtils;
 import com.github.webdriverextensions.internal.WebDriverExtensionException;
+import net.sf.cglib.core.ReflectUtils;
 import org.apache.commons.lang3.StringUtils;
 import static org.apache.commons.lang3.math.NumberUtils.*;
 import org.hamcrest.Matcher;
@@ -59,24 +61,39 @@ public class Bot {
     }
 
 
+    /* Element is ready */
+    public static void elementIsReady(WebElement webElement) {
+        waitForElementToDisplay(webElement, 10);
+    }
+
+    public static void elementIsReady(WebComponent webElement) {
+        waitForElementToDisplay(webElement, 10);
+    }
+
+    public static void elementsAreReady(List<WebElement> webElements) {
+        webElements.forEach(Bot::elementIsReady);
+    }
+
 
     /* Click */
     public static void click(WebElement webElement) {
+        elementIsReady(webElement);
         webElement.click();
     }
 
 
-
     /* Double Click */
     public static void doubleClick(WebElement webElement) {
-	Actions action = new Actions(driver());
-	action.doubleClick(webElement).perform();
+        elementIsReady(webElement);
+        Actions action = new Actions(driver());
+        action.doubleClick(webElement).perform();
     }
 
 
 
     /* Type */
     public static void type(String text, WebElement webElement) {
+        elementIsReady(webElement);
         if (text == null) {
             return;
         }
@@ -91,6 +108,7 @@ public class Bot {
 
     /* Clear */
     public static void clear(WebElement webElement) {
+        elementIsReady(webElement);
         webElement.clear();
     }
 
@@ -112,6 +130,8 @@ public class Bot {
     }
 
     public static void pressKeys(WebElement webElement, CharSequence... keys) {
+        elementIsReady(webElement);
+
         webElement.sendKeys(keys);
     }
 
@@ -131,14 +151,17 @@ public class Bot {
     }
 
     public static void selectOption(String text, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).selectByVisibleText(text);
     }
 
     public static void deselectOption(String text, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).deselectByVisibleText(text);
     }
 
     public static void selectAllOptions(WebElement webElement) {
+        elementIsReady(webElement);
         List<WebElement> options = new Select(webElement).getOptions();
         for (WebElement option : options) {
             select(webElement);
@@ -146,22 +169,27 @@ public class Bot {
     }
 
     public static void deselectAllOptions(WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).deselectAll();
     }
 
     public static void selectOptionWithValue(String value, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).selectByValue(value);
     }
 
     public static void deselectOptionWithValue(String value, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).deselectByValue(value);
     }
 
     public static void selectOptionWithIndex(int index, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).selectByIndex(index);
     }
 
     public static void deselectOptionWithIndex(int index, WebElement webElement) {
+        elementIsReady(webElement);
         new Select(webElement).selectByIndex(index);
     }
 
@@ -234,23 +262,31 @@ public class Bot {
     }
 
     public static void waitForElementToDisplay(WebElement webElement, long secondsToWait) {
-        WebDriverWait wait = new WebDriverWait(driver(), secondsToWait);
-        wait.until(ExpectedConditions.visibilityOf(webElement));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), secondsToWait);
+            wait.until(ExpectedConditions.visibilityOf(webElement));
+        } catch (Exception ignore) {}
     }
 
     public static void waitForElementToDisplay(WebElement webElement, double timeToWait, TimeUnit unit) {
-        WebDriverWait wait = new WebDriverWait(driver(), asNanos(timeToWait, unit));
-        wait.until(ExpectedConditions.visibilityOf(webElement));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), asNanos(timeToWait, unit));
+            wait.until(ExpectedConditions.visibilityOf(webElement));
+        } catch (Exception ignore) {}
     }
 
     public static void waitForElementToDisplay(WebElement webElement, long secondsToWait, long sleepInMillis) {
-        WebDriverWait wait = new WebDriverWait(driver(), secondsToWait, sleepInMillis);
-        wait.until(ExpectedConditions.visibilityOf(webElement));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), secondsToWait, sleepInMillis);
+            wait.until(ExpectedConditions.visibilityOf(webElement));
+        } catch (Exception ignore) {}
     }
 
     public static void waitForElementToDisplay(WebElement webElement, double timeToWait, TimeUnit unit, long sleepInMillis) {
-        WebDriverWait wait = new WebDriverWait(driver(), asNanos(timeToWait, unit), sleepInMillis);
-        wait.until(ExpectedConditions.visibilityOf(webElement));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), asNanos(timeToWait, unit), sleepInMillis);
+            wait.until(ExpectedConditions.visibilityOf(webElement));
+        } catch (Exception ignore) {}
     }
 
     public static void waitForElementsToDisplay(List<? extends WebElement> webElements) {
@@ -258,13 +294,17 @@ public class Bot {
     }
 
     public static void waitForElementsToDisplay(List<? extends WebElement> webElements, long secondsToWait) {
-        WebDriverWait wait = new WebDriverWait(driver(), secondsToWait);
-        wait.until(ExpectedConditions.visibilityOfAllElements((List<WebElement>) webElements));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), secondsToWait);
+            wait.until(ExpectedConditions.visibilityOfAllElements((List<WebElement>) webElements));
+        } catch (Exception ignore) {}
     }
 
     public static void waitForElementsToDisplay(List<? extends WebElement> webElements, long secondsToWait, long sleepInMillis) {
-        WebDriverWait wait = new WebDriverWait(driver(), secondsToWait, sleepInMillis);
-        wait.until(ExpectedConditions.visibilityOfAllElements((List<WebElement>) webElements));
+        try {
+            WebDriverWait wait = new WebDriverWait(driver(), secondsToWait, sleepInMillis);
+            wait.until(ExpectedConditions.visibilityOfAllElements((List<WebElement>) webElements));
+        } catch (Exception ignore) {}
     }
 
 
@@ -1106,6 +1146,7 @@ public class Bot {
 
     /* Tag Name */
     public static String tagNameOf(WebElement webElement) {
+        elementIsReady(webElement);
         return webElement.getTagName();
     }
 
@@ -1151,10 +1192,12 @@ public class Bot {
      * @return the id attribute
      */
     public static String attributeIn(String name, WebElement webElement) {
+        elementIsReady(webElement);
         return webElement.getAttribute(name);
     }
 
     public static boolean hasAttribute(String name, WebElement webElement) {
+        elementIsReady(webElement);
         return webElement.getAttribute(name) != null;
     }
 
@@ -1812,6 +1855,7 @@ public class Bot {
      * @return the value attribute
      */
     public static String valueIn(WebElement webElement) {
+        elementIsReady(webElement);
         return attributeIn("value", webElement);
     }
 
@@ -2172,6 +2216,7 @@ public class Bot {
      */
     public static String textIn(WebElement webElement) {
         // Text is trimmed to normalize behavior since Chrome and PhantomJS driver incorrectly returns spaces around the text (Not according the the WebElement tetText docs), see bug report https://github.com/seleniumhq/selenium-google-code-issue-archive/issues/7473 remove this when bug is solved!
+        elementIsReady(webElement);
         return StringUtils.trim(webElement.getText());
     }
 
@@ -2463,6 +2508,7 @@ public class Bot {
     }
 
     public static boolean isDeselected(WebElement webElement) {
+        elementIsReady(webElement);
         return !isSelected(webElement);
     }
 
@@ -2483,6 +2529,7 @@ public class Bot {
 
     /* Checked/Unchecked */
     public static boolean isChecked(WebElement webElement) {
+        elementIsReady(webElement);
         return webElement.isSelected();
     }
 
@@ -2506,6 +2553,7 @@ public class Bot {
 
     /* Enabled/Disabled */
     public static boolean isEnabled(WebElement webElement) {
+        elementIsReady(webElement);
         return webElement.isEnabled();
     }
 
@@ -2529,6 +2577,7 @@ public class Bot {
 
     /* Option */
     public static boolean hasOption(String text, WebElement webElement) {
+        elementIsReady(webElement);
         List<WebElement> options = new Select(webElement).getOptions();
         for (WebElement option : options) {
             if (textEquals(text, option)) {
